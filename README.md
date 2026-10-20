@@ -1,3 +1,4 @@
+
 # ZPCS Intelligent Knowledge Assistant (prototype)
 
 A Retrieval-Augmented Generation (RAG) system that answers officers' questions from authorised ZPCS documents and cites its sources.
@@ -68,3 +69,7 @@ Training a language model from scratch needs billions of words, so this project 
 7. Restart the server. Answers now come from your model (the API reports `trained-model` in the `mode` field).
 
 Prompts are defined once in `app/prompts.py`, so training and the live system always use the same format.
+=======
+# zpcs_assistant
+Design and Implementation of a Knowledge Management: ZPCS Intelligent Knowledge Assistant
+
