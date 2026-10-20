@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZPCS Intelligent Knowledge Assistant</title>
+<style>
+:root{--g:#0B3D2E;--g2:#1F6F54;--gold:#C9A227;--bg:#F1F5F3;--card:#fff;--tx:#18211D;--mu:#5F6F67;--ln:#DDE5E0;--bad:#B5543A;--ok:#1F6F54}
+@media(prefers-color-scheme:dark){:root{--bg:#0E1512;--card:#17221C;--tx:#E8EFEA;--mu:#9DB0A6;--ln:#2A3A31;--g2:#3FA27E}}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;font:16px/1.5 Calibri,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--tx)}
+button,input,select,textarea{font:inherit;color:var(--tx)}
+input,select,textarea{padding:10px 12px;border:1px solid var(--ln);border-radius:8px;background:var(--card);width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--g2);outline-offset:0}
+.btn{background:var(--g2);color:#fff;border:0;padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:600}
+.btn:hover{filter:brightness(1.08)}.btn:disabled{opacity:.55;cursor:not-allowed}.btn.alt{background:transparent;color:var(--tx);border:1px solid var(--ln)}
+.btn.sm{padding:5px 12px;font-weight:500}.hide{display:none!important}.mu{color:var(--mu)}.small{font-size:13px}
+/* login */
+#login{min-height:100%;display:grid;grid-template-columns:1.1fr 1fr}
+.brand{background:linear-gradient(160deg,var(--g),#145a43);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:center}
+.brand h1{font:700 34px/1.2 Cambria,Georgia,serif;margin:18px 0 12px}.brand p{max-width:420px;opacity:.9}
+.brand ul{padding:0;list-style:none;margin:28px 0 0}.brand li{margin:10px 0;padding-left:28px;position:relative;opacity:.95}
+.brand li:before{content:"";position:absolute;left:0;top:7px;width:12px;height:12px;border-radius:50%;background:var(--gold)}
+.formside{display:flex;align-items:center;justify-content:center;padding:32px}
+.lcard{width:100%;max-width:380px}.lcard h2{font:700 26px Cambria,Georgia,serif;margin:0 0 4px}
+.lcard label{display:block;font-weight:600;margin:16px 0 6px;font-size:14px}.pw{position:relative}.pw button{position:absolute;right:6px;top:6px;border:0;background:none;color:var(--mu);cursor:pointer;padding:4px 8px}
+#lerr{color:var(--bad);min-height:22px;margin:12px 0 0;font-size:14px}.lcard .btn{width:100%;margin-top:8px;padding:12px}
+@media(max-width:800px){#login{grid-template-columns:1fr}.brand{padding:28px}.brand ul{display:none}}
+/* shell */
+#app{height:100%;display:flex;flex-direction:column}
+.top{background:var(--g);color:#fff;display:flex;align-items:center;gap:12px;padding:10px 18px}
+.top b{font:700 18px Cambria,Georgia,serif}.top .sp{flex:1}.chip{background:#ffffff22;border-radius:20px;padding:3px 12px;font-size:14px}
+.top .btn.alt{color:#fff;border-color:#fff5}
+.body{flex:1;display:flex;min-height:0}
+nav.side{width:210px;background:var(--card);border-right:1px solid var(--ln);padding:14px 10px;display:flex;flex-direction:column;gap:4px}
+nav.side button{text-align:left;border:0;background:none;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:600;color:var(--mu)}
+nav.side button.on{background:var(--g2);color:#fff}nav.side .sep{height:1px;background:var(--ln);margin:8px 0}
+main{flex:1;overflow:auto;min-width:0}.page{max-width:980px;margin:0 auto;padding:22px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:18px;margin-bottom:16px}
+h2.t{font:700 24px Cambria,Georgia,serif;margin:0 0 4px}h3{margin:0 0 10px;font-size:17px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.grow{flex:1;min-width:160px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--ln)}th{color:var(--mu);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--bg);border-radius:10px;padding:12px 14px}.stat b{display:block;font-size:26px;font-family:Cambria,Georgia,serif}
+.stat .d{font-size:13px;font-weight:600}.up{color:var(--ok)}.down{color:var(--bad)}
+.drop{border:2px dashed var(--ln);border-radius:12px;padding:22px;text-align:center;cursor:pointer;display:block}.drop:hover{border-color:var(--g2)}
+/* training */
+.trainbox{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:center}
+@media(max-width:700px){.trainbox{grid-template-columns:1fr}}
+.gear{fill:var(--g2);opacity:.9}.gear.b{fill:var(--gold)}.gear.c{fill:#4C8F77}.hole{fill:var(--card)}
+.idle .gear{filter:grayscale(.8);opacity:.5}
+@keyframes cw{to{transform:rotate(360deg)}}@keyframes ccw{to{transform:rotate(-360deg)}}
+.spin .cw{animation:cw 3.2s linear infinite}.spin .ccw{animation:ccw 2.4s linear infinite}
+.bar{height:12px;background:var(--bg);border-radius:8px;overflow:hidden;margin:10px 0 6px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g2),var(--gold));transition:width .6s}
+canvas{width:100%;height:260px;display:block}.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.charts{grid-template-columns:1fr}}
+.note{background:var(--bg);border-left:4px solid var(--gold);padding:10px 14px;border-radius:6px;font-size:14px}
+/* chat */
+#view-chat{height:100%;display:flex;flex-direction:column}
+#msgs{flex:1;overflow:auto;padding:22px 16px}.wrap{max-width:820px;margin:0 auto}
+.msg{display:flex;gap:10px;margin:14px 0}.msg.u{justify-content:flex-end}
+.av{width:34px;height:34px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;font-size:13px}
+.bub{max-width:78%;padding:11px 15px;border-radius:14px;white-space:pre-wrap;word-wrap:break-word}
+.u .bub{background:var(--g2);color:#fff;border-bottom-right-radius:4px}.a .bub{background:var(--card);border:1px solid var(--ln);border-bottom-left-radius:4px}
+.bub.warn{border-color:var(--gold);background:#C9A22718}
+sup.c{background:var(--gold);color:#18211D;border-radius:9px;padding:0 6px;font-size:11px;font-weight:700;margin:0 1px;cursor:pointer}
+details.src{margin-top:10px;white-space:normal}details.src summary{cursor:pointer;color:var(--g2);font-weight:600;font-size:14px}
+.si{border-left:3px solid var(--gold);padding:4px 10px;margin:8px 0;font-size:14px}.si b{display:block}.si span{color:var(--mu)}
+.badge{font-size:12px;color:var(--mu);margin-top:6px;white-space:normal}
+.dots span{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mu);margin:0 2px;animation:bl 1.2s infinite}.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.welcome{text-align:center;margin-top:7vh}.welcome h2{font:700 28px Cambria,Georgia,serif;margin:10px 0 4px}
+.sug{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}.sug button{border:1px solid var(--ln);background:var(--card);padding:8px 14px;border-radius:20px;cursor:pointer}.sug button:hover{border-color:var(--g2)}
+.composer{border-top:1px solid var(--ln);background:var(--card);padding:12px 16px}.composer .wrap{display:flex;gap:10px;align-items:flex-end}
+.composer textarea{resize:none;max-height:140px;min-height:44px}
+dialog{border:1px solid var(--ln);border-radius:12px;background:var(--card);color:var(--tx);padding:20px;max-width:380px;width:92%}dialog::backdrop{background:#0008}
+.lcard .link{background:none;border:0;color:var(--g2);cursor:pointer;font-weight:600;padding:0}
+
+.menu{position:relative}.avbtn{display:flex;align-items:center;gap:8px;background:#ffffff1f;border:1px solid #fff5;border-radius:24px;padding:4px 12px 4px 4px;color:#fff;cursor:pointer}
+.avbtn:hover{background:#ffffff33}.avatar{width:30px;height:30px;border-radius:50%;background:var(--gold);color:#18211D;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:13px}
+.dd{position:absolute;right:0;top:calc(100% + 8px);min-width:250px;background:var(--card);color:var(--tx);border:1px solid var(--ln);border-radius:12px;box-shadow:0 8px 24px #0005;z-index:30;padding:6px}
+.dd .hd{padding:10px 12px;border-bottom:1px solid var(--ln);margin-bottom:4px}.dd .hd b{display:block}
+.dd button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:15px}
+.dd button:hover{background:var(--bg)}.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style></head><body>
+
+<section id="login">
+ <div class="brand"><div style="font-size:15px;letter-spacing:2px;color:var(--gold)">ZIMBABWE PRISONS AND CORRECTIONAL SERVICE</div>
+  <h1>Intelligent Knowledge Assistant</h1><p>Ask a question and get an answer drawn only from approved ZPCS documents, with the source shown.</p>
+  <ul><li>Answers cite the document, section and page</li><li>Access depends on your role</li><li>Runs on the ZPCS network</li></ul></div>
+ <div class="formside">
+  <form class="lcard" id="loginForm" onsubmit="login(event)">
+   <h2>Welcome back</h2><div class="mu">Sign in with your service account</div>
+   <label for="u">Username</label><input id="u" autocomplete="username" autofocus required>
+   <label for="p">Password</label><div class="pw"><input id="p" type="password" autocomplete="current-password" required><button type="button" onclick="togglePw()" id="pwb">Show</button></div>
+   <div id="lerr" role="alert"></div><button class="btn" id="lbtn">Sign in</button>
+   <p class="small mu" style="margin-top:18px">New here? <button type="button" class="link" onclick="showReg(true)">Create an account</button></p>
+   <p class="small mu">Authorised users only. Activity is logged.</p></form>
+  <form class="lcard hide" id="regForm" onsubmit="register(event)">
+   <h2>Create an account</h2><div class="mu">An administrator must approve your request before you can sign in.</div>
+   <label for="rn">Full name</label><input id="rn" required maxlength="100">
+   <label for="rs">Service number (optional)</label><input id="rs" maxlength="30">
+   <label for="ru">Username</label><input id="ru" required minlength="3" maxlength="64" autocomplete="username">
+   <label for="rp">Password (8+ characters)</label><input id="rp" type="password" required minlength="8" autocomplete="new-password">
+   <label for="rp2">Repeat password</label><input id="rp2" type="password" required minlength="8" autocomplete="new-password">
+   <div id="rmsg" class="small" role="alert" style="margin:12px 0 0;min-height:22px"></div><button class="btn">Request access</button>
+   <p class="small mu" style="margin-top:18px"><button type="button" class="link" onclick="showReg(false)">Back to sign in</button></p></form>
+ </div>
+</section>
+
+<section id="app" class="hide">
+ <div class="top"><b>ZPCS Knowledge Assistant</b><span class="sp"></span><button class="btn alt sm hide" id="newchat" onclick="newChat()">New chat</button><div class="menu"><button class="avbtn" onclick="toggleMenu(event)" aria-haspopup="true" aria-label="Account menu"><span class="avatar" id="avatar">?</span><span id="who"></span><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M6 9l6 6 6-6"/></svg></button>
+   <div class="dd hide" id="dd" onclick="event.stopPropagation()"><div class="hd"><b id="ddname"></b><span class="small mu" id="ddrole"></span></div>
+    <button onclick="openProfile()"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>My profile</button><button onclick="logout()"><svg class="ic" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</button></div></div></div>
+ <div class="body">
+  <nav class="side hide" id="side">
+   <button data-v="docs" onclick="go('docs')">1. Documents</button><button data-v="train" onclick="go('train')">2. Train model</button>
+   <div class="sep"></div><button data-v="chat" onclick="go('chat')">Test the chat</button><button data-v="users" id="usersBtn" onclick="go('users')">Users</button><button data-v="logs" onclick="go('logs')">Activity log</button></nav>
+  <main>
+   <div id="view-chat" class="hide"><div id="msgs"></div>
+    <div class="composer"><div class="wrap"><textarea id="q" rows="1" placeholder="Ask a question about ZPCS policies and procedures..." onkeydown="qkey(event)" oninput="grow(this)"></textarea>
+     <button class="btn" id="send" onclick="sendQ()">Send</button></div>
+     <div class="wrap small mu" style="margin-top:6px"><label><input type="checkbox" id="quick" style="width:auto;padding:0"> Quick answers (show passages only, instant)</label></div><div class="wrap small mu">Answers are guidance drawn from approved documents. The official document is the authority.</div></div></div>
+
+   <div id="view-docs" class="page hide"><h2 class="t">Documents</h2><p class="mu">Step 1: upload the documents the assistant should learn from.</p>
+    <div class="card"><label class="drop"><input id="f" type="file" accept=".pdf,.docx,.doc,.txt" class="hide" onchange="fileChosen()"><b id="fname">Click to choose a PDF, DOCX or TXT file</b><div class="small mu">Scanned files need OCR enabled on the server</div></label>
+     <div class="row" style="margin-top:12px"><input class="grow" id="t" placeholder="Document title (optional)"><select id="lvl" style="width:210px"><option value="1">Visible to all officers</option><option value="2">Senior officers and above</option><option value="3">Administrators only</option></select><button class="btn" id="ubtn" onclick="upload()">Upload</button></div>
+     <div id="uerr" class="small" style="margin-top:8px"></div></div>
+    <div class="stats" id="dstats" style="margin-bottom:16px"></div>
+    <div class="card"><h3>Uploaded documents</h3><div id="doclist"></div></div></div>
+
+   <div id="view-train" class="page hide"><h2 class="t">Train model</h2><p class="mu">Step 2: train the retrieval model on your documents, then review how well it performs.</p>
+    <div class="card"><div class="trainbox"><svg id="gears" viewBox="0 0 260 170" class="idle" aria-hidden="true"></svg>
+     <div><h3 id="tstate">Ready to train</h3><div class="mu" id="stage">Upload documents first, then start training.</div>
+      <div class="bar"><i id="pbar"></i></div><div class="small mu" id="ptxt"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="trainBtn" onclick="startTrain()">Train model</button><span id="terr" class="small down"></span></div></div></div></div>
+    <div id="results" class="hide">
+     <div class="card"><h3>Model performance</h3><div class="stats" id="mcards"></div><p class="small mu" id="minfo" style="margin:12px 0 0"></p></div>
+     <div class="charts"><div class="card"><h3>Before and after training</h3><canvas id="cbar"></canvas></div><div class="card"><h3>Progress by epoch</h3><canvas id="cline"></canvas></div></div>
+     <div class="card"><h3>Training history</h3><div id="htable"></div></div>
+     <div class="note"><b>How to read this.</b> Precision is the share of retrieved passages that were the right one. Recall is the share of test questions where the right passage was found. F1 balances the two. Test questions are built from the headings of sections the model never trained on. Precision is naturally low because the system returns up to 5 passages while only 1 or 2 are relevant, so Top-1 accuracy, recall and MRR are the better indicators. Scores show improvement on your own documents and are not a guarantee for every real question.</div></div></div>
+
+   <div id="view-users" class="page hide"><h2 class="t">Users</h2><div class="card hide" id="pendcard"><h3>Waiting for approval</h3><div id="plist"></div></div><div class="card"><h3>Create user</h3><div class="row"><input class="grow" id="nu" placeholder="Username"><input class="grow" id="np" type="password" placeholder="Password (8+ characters)"><input class="grow" id="nn" placeholder="Full name"><select id="nr" style="width:180px"><option value="officer">Officer</option><option value="senior_officer">Senior officer</option><option value="administrator">Administrator</option></select><button class="btn" onclick="newUser()">Create</button></div><div id="nerr" class="small" style="margin-top:8px"></div></div><div class="card"><h3>All users</h3><div id="ulist"></div></div></div>
+   <div id="view-logs" class="page hide"><h2 class="t">Activity log</h2><div class="card"><div id="logs"></div></div></div>
+  </main></div>
+</section>
+
+<dialog id="prof" style="max-height:92vh;overflow:auto"><h3>My profile</h3>
+ <label class="small">Full name</label><input id="pfn" maxlength="100">
+ <label class="small" style="display:block;margin-top:10px">Service number</label><input id="pfs" maxlength="30">
+ <label class="small" style="display:block;margin-top:10px">Username</label><input id="pfu" maxlength="64" autocomplete="username">
+ <label class="small" style="display:block;margin-top:10px">Role (set by an administrator)</label><input id="pfr" disabled>
+ <h3 style="margin:18px 0 4px;font-size:15px">Change password <span class="small mu" style="font-weight:400">(leave blank to keep it)</span></h3>
+ <input id="pfc" type="password" placeholder="Current password" autocomplete="current-password">
+ <input id="pfn1" type="password" placeholder="New password (8+ characters)" autocomplete="new-password" style="margin-top:8px">
+ <input id="pfn2" type="password" placeholder="Repeat new password" autocomplete="new-password" style="margin-top:8px">
+ <div id="pfm" class="small" style="min-height:22px;margin:10px 0"></div>
+ <div class="row"><button class="btn" onclick="saveProfile()">Save changes</button><button class="btn alt" onclick="$('prof').close()">Cancel</button></div></dialog>
+
+<script>
+const $=id=>document.getElementById(id);
+const el=(t,txt,cls)=>{const e=document.createElement(t);if(txt!==undefined)e.textContent=txt;if(cls)e.className=cls;return e};
+const S={token:sessionStorage.getItem('zt'),role:sessionStorage.getItem('zr'),user:sessionStorage.getItem('zu')};
+let view='',msgs=[],typing=false,pollT=null,lastRun=null;
+async function api(path,opt={}){opt.headers=Object.assign({},opt.headers,S.token?{Authorization:'Bearer '+S.token}:{});
+ const r=await fetch('/api'+path,opt);const j=await r.json().catch(()=>({}));
+ if(r.status===401&&S.token){logout();return}if(!r.ok)throw new Error(j.detail||r.statusText);return j}
+const post=b=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+const table=(head,rows)=>{const t=el('table'),h=el('tr');head.forEach(x=>h.append(el('th',x)));t.append(h);rows.forEach(r=>{const tr=el('tr');r.forEach(c=>{const td=el('td');c instanceof Node?td.append(c):td.textContent=c;tr.append(td)});t.append(tr)});return t};
+const pct=v=>(v*100).toFixed(1)+'%';
+
+/* ---------- login ---------- */
+function togglePw(){const p=$('p');p.type=p.type==='password'?'text':'password';$('pwb').textContent=p.type==='password'?'Show':'Hide'}
+async function login(e){e.preventDefault();$('lerr').textContent='';$('lbtn').disabled=true;
+ try{const j=await api('/login',post({username:$('u').value.trim(),password:$('p').value}));
+  Object.assign(S,{token:j.token,role:j.role,user:j.username});sessionStorage.setItem('zt',j.token);sessionStorage.setItem('zr',j.role);sessionStorage.setItem('zu',j.username);start()}
+ catch(err){$('lerr').textContent=err.message}finally{$('lbtn').disabled=false}}
+function showReg(on){$('loginForm').classList.toggle('hide',on);$('regForm').classList.toggle('hide',!on)}
+async function register(e){e.preventDefault();const m=$('rmsg');m.className='small down';m.textContent='';
+ if($('rp').value!==$('rp2').value){m.textContent='Passwords do not match.';return}
+ try{await api('/register',post({full_name:$('rn').value,service_number:$('rs').value,username:$('ru').value.trim(),password:$('rp').value}));
+  m.className='small up';m.textContent='Request sent. An administrator must approve your account before you can sign in.';e.target.reset()}catch(x){m.textContent=x.message}}
+let ME={};
+const initials=n=>{const p=n.trim().split(/\s+/);return((p[0]||'?')[0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase()};
+async function loadMe(){try{ME=await api('/me');paintMe()}catch(e){}}
+function paintMe(){const n=ME.full_name||ME.username||S.user||'?';$('avatar').textContent=initials(n);$('who').textContent=n;$('ddname').textContent=n;$('ddrole').textContent=((ME.role||S.role||'')).replace('_',' ')+' | @'+(ME.username||S.user)}
+function toggleMenu(e){e.stopPropagation();$('dd').classList.toggle('hide')}
+document.addEventListener('click',()=>$('dd').classList.add('hide'));document.addEventListener('keydown',e=>{if(e.key==='Escape')$('dd').classList.add('hide')});
+function openProfile(){$('dd').classList.add('hide');$('pfn').value=ME.full_name||'';$('pfs').value=ME.service_number||'';$('pfu').value=ME.username||S.user;$('pfr').value=(ME.role||S.role).replace('_',' ');
+ $('pfm').textContent='';['pfc','pfn1','pfn2'].forEach(i=>$(i).value='');$('prof').showModal()}
+async function saveProfile(){const m=$('pfm');m.className='small down';m.textContent='';
+ if($('pfn1').value!==$('pfn2').value){m.textContent='The new passwords do not match.';return}
+ try{const old=S.user,j=await api('/me',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:$('pfn').value,service_number:$('pfs').value,username:$('pfu').value,current_password:$('pfc').value,new_password:$('pfn1').value})});
+  S.token=j.token;S.user=j.username;sessionStorage.setItem('zt',j.token);sessionStorage.setItem('zu',j.username);
+  if(old!==j.username)sessionStorage.setItem('zc_'+j.username,JSON.stringify(msgs.slice(-40)));ME=j;paintMe();
+  m.className='small up';m.textContent='Profile saved.';['pfc','pfn1','pfn2'].forEach(i=>$(i).value='');setTimeout(()=>$('prof').close(),800)}catch(x){m.textContent=x.message}}
+function logout(){sessionStorage.clear();location.reload()}
+function start(){$('login').classList.add('hide');$('app').classList.remove('hide');
+ paintMe();loadMe();msgs=JSON.parse(sessionStorage.getItem('zc_'+S.user)||'[]');
+ const adm=S.role==='administrator';$('side').classList.toggle('hide',!adm);go(adm?'docs':'chat');if(adm)badge()}
+async function badge(){try{const u=await api('/users');const n=u.filter(x=>x.status==='pending').length;$('usersBtn').textContent='Users'+(n?' ('+n+' waiting)':'')}catch(e){}}
+function go(v){view=v;['chat','docs','train','users','logs'].forEach(x=>$('view-'+x).classList.toggle('hide',x!==v));
+ document.querySelectorAll('nav.side button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+ $('newchat').classList.toggle('hide',v!=='chat');
+ ({chat:renderChat,docs:loadDocs,train:loadTrain,users:loadUsers,logs:loadLogs})[v]()}
+
+/* ---------- chat ---------- */
+const SUGGEST=['Who can arrest without a warrant?','What assistance can police request from private persons?','What are the rules on bail?'];
+function grow(t){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,140)+'px'}
+function qkey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendQ()}}
+function newChat(){msgs=[];sessionStorage.removeItem('zc_'+S.user);renderChat()}
+function cited(text,box){text.split(/(\[\d+\])/).forEach(p=>{const m=p.match(/^\[(\d+)\]$/);
+ if(m){const s=el('sup',m[1],'c');s.title='Source '+m[1];s.onclick=()=>{const d=box.parentElement.querySelector('details');if(d){d.open=true;d.scrollIntoView({block:'nearest'})}};box.append(s)}else box.append(document.createTextNode(p))})}
+function bubble(m){const row=el('div',undefined,'msg '+(m.role==='user'?'u':'a'));
+ if(m.role!=='user')row.append(el('div','Z','av'));
+ const col=el('div');col.style.maxWidth='78%';const b=el('div',undefined,'bub'+(m.mode==='refused'?' warn':''));b.style.maxWidth='100%';
+ m.role==='user'?b.textContent=m.text:cited(m.text,b);col.append(b);
+ if(m.sources&&m.sources.length){const d=el('details',undefined,'src');d.append(el('summary','Sources ('+m.sources.length+')'));
+  m.sources.forEach(s=>{const i=el('div',undefined,'si');i.append(el('b','['+s.n+'] '+s.title+(s.page?', page '+s.page:'')+(s.section?' | '+s.section:'')),el('span',s.excerpt));d.append(i)});b.append(d)}
+ if(m.role!=='user'&&m.mode){const t={refused:'Not found in your approved documents','trained-model':'Answered by the trained ZPCS model','base-model':'Answered by the base model (not yet fine-tuned)',extractive:'Showing the most relevant passages only',uncited:'Answer without citations: check the source'}[m.mode];if(t)col.append(el('div',t,'badge'))}
+ row.append(col);return row}
+function renderChat(){const box=$('msgs');box.replaceChildren();const w=el('div',undefined,'wrap');box.append(w);
+ if(!msgs.length&&!typing){const x=el('div',undefined,'welcome');x.append(el('div','Z','av'),el('h2','How can I help, '+S.user+'?'),el('div','Ask about a policy, regulation or procedure. I answer only from approved documents.','mu'));
+  const s=el('div',undefined,'sug');SUGGEST.forEach(q=>{const b=el('button',q);b.onclick=()=>sendQ(q);s.append(b)});x.append(s);w.append(x)}
+ msgs.forEach(m=>w.append(bubble(m)));
+ if(typing){const r=el('div',undefined,'msg a');r.append(el('div','Z','av'));const b=el('div',undefined,'bub');const d=el('span',undefined,'dots');d.append(el('span'),el('span'),el('span'));b.append(d);r.append(b);w.append(r)}
+ box.scrollTop=box.scrollHeight;$('q').focus()}
+async function sendQ(text){const q=(text||$('q').value).trim();if(!q||typing)return;$('q').value='';grow($('q'));
+ msgs.push({role:'user',text:q});typing=true;$('send').disabled=true;renderChat();
+ const quick=$('quick').checked;let acc='',bub=null,final=null;
+ try{const r=await fetch('/api/ask/stream',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+S.token},body:JSON.stringify({question:q,quick})});
+  if(r.status===401){logout();return}if(!r.ok||!r.body)throw new Error('stream unavailable');
+  const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+  for(;;){const{done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+   while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line)continue;const ev=JSON.parse(line);
+    if(ev.t==='tok'){acc+=ev.v;if(!bub){typing=false;msgs.push({role:'assistant',text:'',live:true});renderChat();const all=document.querySelectorAll('#msgs .msg.a .bub');bub=all[all.length-1]}
+     bub.textContent=acc;$('msgs').scrollTop=$('msgs').scrollHeight}else if(ev.t==='done')final=ev}}
+  if(!final)throw new Error('The answer was interrupted')}
+ catch(e){try{final=await api('/ask',post({question:q,quick}))}catch(e2){final={answer:'Sorry, something went wrong: '+e2.message,sources:[],mode:'refused'}}}
+ if(msgs.length&&msgs[msgs.length-1].live)msgs.pop();
+ msgs.push({role:'assistant',text:final.answer,sources:final.sources,mode:final.mode});
+ typing=false;$('send').disabled=false;sessionStorage.setItem('zc_'+S.user,JSON.stringify(msgs.slice(-40)));renderChat()}
+
+/* ---------- documents ---------- */
+function fileChosen(){const f=$('f').files[0];$('fname').textContent=f?f.name:'Click to choose a PDF, DOCX or TXT file'}
+async function upload(){const f=$('f').files[0],e=$('uerr');e.className='small';if(!f){e.textContent='Choose a file first.';return}
+ const fd=new FormData();fd.append('file',f);fd.append('title',$('t').value);fd.append('access_level',$('lvl').value);
+ $('ubtn').disabled=true;e.textContent='Reading, cleaning and indexing the document. Large files can take a minute...';
+ try{const j=await api('/documents',{method:'POST',body:fd});e.className='small up';e.textContent='Done: '+j.chunks+' passages indexed. ';
+  const b=el('button','Go to training',' btn sm');b.onclick=()=>go('train');e.append(b);$('f').value='';$('t').value='';fileChosen();loadDocs()}
+ catch(x){e.className='small down';e.textContent=x.message}finally{$('ubtn').disabled=false}}
+async function loadDocs(){const d=await api('/documents');const n=d.reduce((a,x)=>a+x.chunks,0);const s=$('dstats');s.replaceChildren();
+ [['Documents',d.length],['Passages indexed',n]].forEach(([l,v])=>{const c=el('div',undefined,'stat');c.append(el('b',String(v)),el('span',l,'mu small'));s.append(c)});
+ const lv={1:'All officers',2:'Senior+',3:'Admins'};const box=$('doclist');box.replaceChildren();
+ if(!d.length){box.append(el('p','No documents yet.','mu'));return}
+ box.append(table(['Title','Access','Passages','Uploaded',''],d.map(x=>{const b=el('button','Delete','btn alt sm');b.onclick=async()=>{if(confirm('Delete "'+x.title+'"? Retrain afterwards.')){await api('/documents/'+x.id,{method:'DELETE'});loadDocs()}};return[x.title,lv[x.access_level],String(x.chunks),(x.uploaded_at||'').slice(0,10),b]})))}
+
+/* ---------- training ---------- */
+function gearPts(cx,cy,r,n){const ri=r*.8,st=2*Math.PI/n,p=[];for(let i=0;i<n;i++){const a=i*st;[[0,ri],[.12,r],[.38,r],[.5,ri]].forEach(([k,rr])=>p.push((cx+rr*Math.cos(a+k*st)).toFixed(1)+','+(cy+rr*Math.sin(a+k*st)).toFixed(1)))}return p.join(' ')}
+function buildGears(){const g=$('gears'),ns='http://www.w3.org/2000/svg';g.replaceChildren();
+ [[95,88,52,12,'cw',''],[178,58,33,8,'ccw','b'],[170,128,26,7,'ccw','c']].forEach(([cx,cy,r,n,dir,col])=>{
+  const grp=document.createElementNS(ns,'g');grp.setAttribute('class',dir);grp.style.transformOrigin=cx+'px '+cy+'px';
+  const p=document.createElementNS(ns,'polygon');p.setAttribute('points',gearPts(cx,cy,r,n));p.setAttribute('class','gear '+col);
+  const h=document.createElementNS(ns,'circle');h.setAttribute('cx',cx);h.setAttribute('cy',cy);h.setAttribute('r',r*.28);h.setAttribute('class','hole');grp.append(p,h);g.append(grp)})}
+async function loadTrain(){buildGears();const s=await api('/train/status');renderTrain(s);if(s.state==='running')startPoll()}
+function startPoll(){if(pollT)return;pollT=setInterval(async()=>{if(view!=='train'){return}try{const s=await api('/train/status');renderTrain(s);if(s.state!=='running'){clearInterval(pollT);pollT=null}}catch(e){}},1200)}
+async function startTrain(){$('terr').textContent='';try{await api('/train',{method:'POST'});renderTrain({state:'running',stage:'Starting...',progress:2,epoch:0,epochs:3,run:lastRun});startPoll()}catch(e){$('terr').textContent=e.message}}
+function renderTrain(s){const run=s.state==='running';const g=$('gears');g.setAttribute('class',run?'spin':(s.state==='done'||s.run?'':'idle'));
+ $('trainBtn').disabled=run;$('trainBtn').textContent=run?'Training...':(s.run?'Train again':'Train model');
+ $('tstate').textContent=run?'Training in progress':s.state==='error'?'Training failed':s.state==='done'||s.run?'Model trained':'Ready to train';
+ $('stage').textContent=s.state==='error'?'Something went wrong.':(s.stage||(s.run?'Last trained '+(s.run.finished_at||'')+' UTC':'Upload documents first, then start training.'));
+ $('pbar').style.width=(run?s.progress:(s.run?100:0))+'%';$('ptxt').textContent=run?s.progress+'% complete. Please keep this page open and do not upload documents.':'';
+ $('terr').textContent=s.state==='error'?(s.error||''):'';
+ if(s.run){lastRun=s.run;renderRun(s.run)}else $('results').classList.add('hide')}
+function renderRun(r){$('results').classList.remove('hide');const M=[['precision','Precision'],['recall','Recall'],['f1','F1 score'],['top1','Top-1 accuracy'],['mrr','MRR']];
+ const box=$('mcards');box.replaceChildren();M.forEach(([k,l])=>{const c=el('div',undefined,'stat'),d=r.final[k]-r.baseline[k];
+  c.append(el('span',l,'mu small'),el('b',k==='mrr'?r.final[k].toFixed(2):pct(r.final[k])),el('span',(d>=0?'+':'')+(k==='mrr'?d.toFixed(2):(d*100).toFixed(1)+' pts')+' vs before','d '+(d>=0?'up':'down')));box.append(c)});
+ $('minfo').textContent='Measured on '+r.n_eval+' held-out test questions from '+r.n_docs+' document(s) and '+r.n_chunks+' passages, using '+r.n_train+' training pairs. Retrieval returns up to '+r.k+' passages with similarity of at least '+r.threshold+'. Trained in '+r.seconds+' s.';
+ drawBars($('cbar'),M,r);drawLines($('cline'),r.history);
+ $('htable').replaceChildren(table(['Epoch','Precision','Recall','F1','Top-1','MRR'],r.history.map(h=>[h.epoch===0?'0 (before)':String(h.epoch),pct(h.precision),pct(h.recall),pct(h.f1),pct(h.top1),h.mrr.toFixed(2)])))}
+function fit(c){const b=c.getBoundingClientRect(),d=window.devicePixelRatio||1;c.width=b.width*d;c.height=b.height*d;const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return[g,b.width,b.height]}
+const col=n=>getComputedStyle(document.body).getPropertyValue(n).trim();
+function axes(g,w,h,L,B,T){g.strokeStyle=col('--ln');g.fillStyle=col('--mu');g.font='12px Calibri,Arial';g.textAlign='right';
+ for(let i=0;i<=4;i++){const y=T+(h-B-T)*(1-i/4);g.beginPath();g.moveTo(L,y);g.lineTo(w-8,y);g.stroke();g.fillText((i*25)+'%',L-6,y+4)}}
+function drawBars(c,M,r){const[g,w,h]=fit(c),L=40,B=40,T=14;g.clearRect(0,0,w,h);axes(g,w,h,L,B,T);const gw=(w-L-8)/M.length;
+ M.forEach(([k,l],i)=>{[[r.baseline[k],col('--mu')],[r.final[k],col('--g2')]].forEach(([v,cl],j)=>{const bw=gw*.3,x=L+i*gw+gw*.18+j*(bw+4),bh=(h-B-T)*Math.min(v,1);g.fillStyle=cl;g.fillRect(x,h-B-bh,bw,bh)});
+  g.fillStyle=col('--tx');g.textAlign='center';g.fillText(l,L+i*gw+gw/2,h-B+16)});
+ g.fillStyle=col('--mu');g.fillRect(w-150,h-16,10,10);g.fillStyle=col('--tx');g.textAlign='left';g.fillText('Before',w-136,h-7);g.fillStyle=col('--g2');g.fillRect(w-84,h-16,10,10);g.fillStyle=col('--tx');g.fillText('After',w-70,h-7)}
+function drawLines(c,H){const[g,w,h]=fit(c),L=40,B=40,T=14;g.clearRect(0,0,w,h);axes(g,w,h,L,B,T);const n=H.length,dx=n>1?(w-L-24)/(n-1):0;
+ [['precision','Precision',col('--gold')],['recall','Recall','#2E7D9A'],['f1','F1',col('--g2')]].forEach(([k,l,cl],s)=>{g.strokeStyle=cl;g.fillStyle=cl;g.lineWidth=2.5;g.beginPath();
+  H.forEach((p,i)=>{const x=L+8+i*dx,y=h-B-(h-B-T)*Math.min(p[k],1);i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke();
+  H.forEach((p,i)=>{g.beginPath();g.arc(L+8+i*dx,h-B-(h-B-T)*Math.min(p[k],1),3.5,0,7);g.fill()});
+  g.fillRect(L+s*90,h-16,10,10);g.fillStyle=col('--tx');g.textAlign='left';g.fillText(l,L+s*90+14,h-7)});
+ g.fillStyle=col('--mu');g.textAlign='center';H.forEach((p,i)=>g.fillText(p.epoch===0?'Before':'Epoch '+p.epoch,L+8+i*dx,h-B+16))}
+window.addEventListener('resize',()=>{if(view==='train'&&lastRun)renderRun(lastRun)});
+
+/* ---------- users and logs ---------- */
+async function newUser(){const e=$('nerr');try{await api('/users',post({username:$('nu').value,password:$('np').value,full_name:$('nn').value,role:$('nr').value}));e.className='small up';e.textContent='User created.';['nu','np','nn'].forEach(i=>$(i).value='');loadUsers()}catch(x){e.className='small down';e.textContent=x.message}}
+async function loadUsers(){const u=await api('/users');const pend=u.filter(x=>x.status==='pending'),act=u.filter(x=>x.status==='active');
+ $('pendcard').classList.toggle('hide',!pend.length);$('usersBtn').textContent='Users'+(pend.length?' ('+pend.length+' waiting)':'');
+ $('plist').replaceChildren(table(['Name','Service no.','Username','Approve as'],pend.map(x=>{const sel=el('select');[['officer','Officer'],['senior_officer','Senior officer'],['administrator','Administrator']].forEach(([v,l])=>{const o=el('option',l);o.value=v;sel.append(o)});sel.style.width='160px';
+  const ok=el('button','Approve','btn sm'),no=el('button','Reject','btn alt sm');
+  ok.onclick=async()=>{await api('/users/'+x.id+'/approve',post({role:sel.value}));loadUsers()};
+  no.onclick=async()=>{if(confirm('Reject the request from '+x.username+'?')){await api('/users/'+x.id+'/reject',{method:'POST'});loadUsers()}};
+  const w=el('div',undefined,'row');w.append(sel,ok,no);return[x.full_name,x.service_number||'',x.username,w]})));
+ $('ulist').replaceChildren(table(['Username','Name','Role',''],act.map(x=>{const b=el('button','Reset password','btn alt sm');
+  b.onclick=async()=>{const p=prompt('New password for '+x.username+' (8+ characters)');if(p){try{await api('/users/'+x.id+'/password',post({password:p}));alert('Password changed.')}catch(e){alert(e.message)}}};
+  return[x.username,x.full_name||'',x.role.replace('_',' '),b]})))}
+async function loadLogs(){const l=await api('/logs');$('logs').replaceChildren(table(['Time','User','Action','Detail'],l.map(x=>[x.ts,x.username||'',x.action,x.detail||''])))}
+if(S.token&&S.role)start();
+</script></body></html>
