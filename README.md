@@ -16,7 +16,8 @@ source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
-Open http://localhost:8000 and sign in as `admin` / `ChangeMe123!` (set `ZPCS_ADMIN_PASSWORD` and `ZPCS_SECRET_KEY` first; see `.env.example`).
+Open http://localhost:8000 and sign in as `admin` / `
+` (set `ZPCS_ADMIN_PASSWORD` and `ZPCS_SECRET_KEY` first; see `.env.example`).
 The first run downloads the embedding model, so it needs internet once. After that everything runs locally.
 
 **Answer model:** the system uses *your own fine-tuned model* from `models/zpcs-generator`. Until you train it, the base model (`Qwen/Qwen2.5-1.5B-Instruct`) is downloaded and used so you can test the pipeline. See "Train your own model" below.
